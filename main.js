@@ -7,6 +7,8 @@ const contenedorCitas = document.querySelector('#citas');
 
 const contenido = document.querySelector('#contenido');
 
+let editando
+
 
 class Citas {
     constructor() {
@@ -22,6 +24,10 @@ class Citas {
     eliminarCita(id) {
         //Vamos a traer todas las citas diferentes a la q nos estamos pasando
         this.citas = this.citas.filter( cita => cita.id !== id )
+    }
+
+    editarCita(citaActualizada){
+        this.citas = this.citas.map( cita => cita.id === citaActualizada.id ? citaActualizada : cita);
     }
 }
 
@@ -55,12 +61,12 @@ class UI {
             //Boton para eliminar esta cita
             const btnEliminar = document.createElement('button');
             btnEliminar.innerHTML = 'Eliminar';
-
             btnEliminar.onclick = () => eliminarCita(id);
 
             //Añade un boton para editar
             const btnEditar = document.createElement('button');
             btnEditar.innerHTML = 'Editar';
+            btnEditar.onclick = () => cargarEdicion(cita);
 
             //Agregar los parrafos al divcita
             divCita.appendChild(nombreParrafo);
@@ -153,11 +159,30 @@ function nuevaCita(e){
         return;//Para que no se ejecute la siguiente linea
     }
 
-    //GENERAR UN ID UNICO
-    citaObj.id = Date.now();
+    if(editando) {
+        ui.imprimirAlerta('editado correctamente');
 
-    //Creando una nueva cita
-    administrarCitas.agregarCita({...citaObj});
+        //Pasar el objto de la cita a edicion
+        administrarCitas.editarCita({...citaObj});
+
+        //Regresar el texto del boton a su estado original
+        formulario.querySelector('button[type="submit"').textContent = 'agregar';
+
+        //Quitando edicion
+        editando = false;
+
+    } else {
+        //Genera u id unico
+        citaObj.id = Date.now();
+
+        //Creando una nueva cita
+        administrarCitas.agregarCita({...citaObj});
+
+        //Mensaje de agregado correctamente
+        ui.imprimirAlerta('se agregeo correctamente');
+
+    }
+    
 
     //Reiniciar el objeto
     reiniciarObjeto();
@@ -182,5 +207,20 @@ function eliminarCita(id) {
 
     //Refrescar las citas
     ui.imprimirCitas(administrarCitas);
+}
+
+function cargarEdicion(cita) {
+    const {nombre} = cita;
+
+    //Llenar los inputs
+    nombreInput.value = nombre;
+
+    //Llenar el obejto
+    citaObj.nombre = nombre;
+
+    //Cambiar el texto del boton
+    formulario.querySelector('button[type="submit"').textContent = 'Guardar Cambios';
+
+    editando = true;
 
 }
